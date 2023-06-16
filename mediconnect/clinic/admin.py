@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from .views import *
 
 class MedicalRecordAdmin(admin.ModelAdmin):
     list_display = ['patient','date','diagnosis','prescription']
@@ -38,6 +39,30 @@ class AppointmentAdmin(admin.ModelAdmin):
         if hasattr(request.user, 'doctor'):
             return self.readonly_fields + ('patient','doctor',)
         return self.readonly_fields
+
+    def send_email_notifications(self, request, queryset):
+        subject = "Appointment Notification"
+        message = f"Dear patient, your appointment with {Doctor.user} has been scheduled for {Appointment.appointment_date} at {Appointment.appointment_time}."
+        from_email = "hasanadlouni@gmail.com"
+        recipient_list = [doctor.email for doctor in queryset]
+        send_email(subject, message, from_email, recipient_list)
+    send_email_notifications.short_description = "Send Email Notifications"
+
+    def send_sms_notifications(self, request, queryset):
+        selected_rows = list(queryset)
+        numbers = []  # Replace with your desired numbers
+
+        for number in numbers:
+            url = f"http://unosms.us/api.php?user=naderbakir@gmail.com&pass=qfzjui&to={number}&from=fsegorg&msg=nothing"
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                self.message_user(request, f"SMS sent to {number} successfully!")
+            else:
+                self.message_user(request, f"Failed to send SMS to {number}. Error: {response.text}")
+    send_sms_notifications.short_description = "Send SMS Notifications"
+
+    actions = [send_sms_notifications,send_email_notifications]
 
 
 admin.site.register(Doctor, DoctorAdmin)

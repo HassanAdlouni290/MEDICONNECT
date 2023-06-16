@@ -2,6 +2,9 @@ from django.shortcuts import render,redirect
 from .models import Patient,Appointment,MedicalRecord
 from django.contrib.auth.models import User
 from .models import Patient,Doctor,Nurse
+import requests
+from django.core.mail import EmailMessage
+
 
 
 def home(request):
@@ -67,3 +70,61 @@ def view_medical_records(request):
     medical_records = MedicalRecord.objects.all()
     context = {'medical_records': medical_records}
     return render(request, 'view_medical_records.html', context)
+
+
+
+
+def schedule_appointment_with_calendly(doctor_email, appointment_date, appointment_time):
+    api_token = 'VRE7RLUFMYNSDKCXZ6MEPVWC3SMABIR2'
+    base_url = 'https://api.calendly.com'
+    event_type_slug = 'One-on-One'
+
+    headers = {
+        'Authorization': f'Bearer {api_token}',
+        'Content-Type': 'application/json'
+    }
+
+    # Get the available time slots for the doctor's event type
+    availability_url = f'{base_url}/scheduling/event_types/{event_type_slug}/availability'
+    response = requests.get(availability_url, headers=headers, params={'date': appointment_date})
+    available_slots = response.json()['data']['attributes']['slots']
+
+    # Find the desired time slot
+    desired_slot = None
+    for slot in available_slots:
+        if slot['start_time'].split('T')[1] == appointment_time:
+            desired_slot = slot
+            break
+
+    if not desired_slot:
+        raise ValueError('The requested time slot is not available.')
+
+    # Schedule the appointment
+    scheduling_url = f'{base_url}/scheduling/event_requests'
+    payload = {
+        'event': {
+            'event_type_slug': event_type_slug,
+            'invitee': {
+                'email': doctor_email
+            },
+            'start_time': desired_slot['start_time'],
+            'end_time': desired_slot['end_time'],
+        }
+    }
+    response = requests.post(scheduling_url, headers=headers, json=payload)
+
+    if response.status_code == 201:
+        return response.json()['data']['attributes']['uri']
+    else:
+        raise Exception('Failed to schedule the appointment with Calendly.')
+
+def send_email(request):
+    email_subject = 'Test Email'
+    email_body = 'Hello, world!'
+    from_email = 'hasanadlouni@gmail.com'
+
+    email = EmailMessage(email_subject, email_body, from_email, ['hadlouni8@gmail.com'])
+    email.send()
+
+    return HttpResponse("Email Sent")
+
