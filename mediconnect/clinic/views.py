@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect
 from .models import Patient,Appointment,MedicalRecord
 from django.contrib.auth.models import User
-from .models import Patient
+from .models import Patient,Doctor,Nurse
 
 
 def home(request):
@@ -33,7 +33,34 @@ def register_patient(request):
 def success(request):
     return render(request, 'success.html')
 
+def schedule_appointment(request):
+    if request.method == 'POST':
+        # Retrieve the form data from the request.POST dictionary
+        doctor_username = request.POST['Doctor']
+        nurse_username = request.POST['Nurse']
+        appointment_date = request.POST['appointment_date']
+        appointment_time = request.POST['appointment_time']
+        treatment = request.POST['treatment']
 
+        # Retrieve the doctor, nurse, and patient based on the usernames
+        doctor = User.objects.get(username=doctor_username).doctor
+        nurse = User.objects.get(username=nurse_username).nurse
+        patient = request.user.patient
+
+        # Create a new Appointment instance
+        appointment = Appointment.objects.create(
+            patient=patient,
+            doctor=doctor,
+            nurse=nurse,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+            treatment=treatment
+        )
+
+        # Redirect to a success page or another view
+        return redirect('success')
+    else:
+        return render(request, 'schedule_appointment.html')
 
 
 def view_medical_records(request):

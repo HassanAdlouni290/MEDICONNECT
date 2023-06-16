@@ -1,43 +1,75 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Schedule Appointment</title>
-  <link rel="stylesheet" type="text/css" href="/static/css/style.css">
-</head>
-<body>
-  <div class="container">
-    <h2>Schedule Appointment</h2>
-    <form method="post" action="{% url 'schedule_appointment' %}">
-      {% csrf_token %}
-      <div class="form-group">
-        <label for="patient_id">Patient ID:</label>
-        <input type="text" name="patient_id" required>
-      </div>
-      <div class="form-group">
-        <label for="doctor_id">Doctor ID:</label>
-        <input type="text" name="doctor_id" required>
-      </div>
-      <div class="form-group">
-        <label for="nurse_id">Nurse ID:</label>
-        <input type="text" name="nurse_id" required>
-      </div>
-      <div class="form-group">
-        <label for="appointment_date">Appointment Date:</label>
-        <input type="date" name="appointment_date" required>
-      </div>
-      <div class="form-group">
-        <label for="appointment_time">Appointment Time:</label>
-        <input type="time" name="appointment_time" required>
-      </div>
-      <div class="form-group">
-        <label for="treatment">Treatment:</label>
-        <textarea name="treatment" required></textarea>
-      </div>
-      <div class="form-group">
-        <input type="submit" value="Schedule">
-      </div>
-    </form>
-  </div>
-</body>
-</html>
+<!-- schedule_appointment.html -->
 
+<style>
+  .form-container {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .form-container label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .form-container select,
+  .form-container input[type="date"],
+  .form-container input[type="time"],
+  .form-container textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+
+  .form-container button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+</style>
+
+<div class="form-container">
+  <form method="POST">
+    {% csrf_token %}
+
+    <!-- Select Doctor -->
+    <label for="doctor">Doctor:</label>
+    <select name="doctor" id="doctor">
+      <!-- Retrieve and loop through available doctors -->
+      {% for doctor in doctors %}
+        <option value="{{ doctor.id }}">{{ doctor.user.username }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Select Nurse -->
+    <label for="nurse">Nurse:</label>
+    <select name="nurse" id="nurse">
+      <!-- Retrieve and loop through available nurses -->
+      {% for nurse in nurses %}
+        <option value="{{ nurse.id }}">{{ nurse.user.username }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Appointment Date -->
+    <label for="appointment_date">Appointment Date:</label>
+    <input type="date" name="appointment_date" id="appointment_date">
+
+    <!-- Appointment Time -->
+    <label for="appointment_time">Appointment Time:</label>
+    <input type="time" name="appointment_time" id="appointment_time">
+
+    <!-- Treatment -->
+    <label for="treatment">Treatment:</label>
+    <textarea name="treatment" id="treatment" rows="4" cols="50"></textarea>
+
+    <!-- Submit Button -->
+    <button type="submit">Schedule Appointment</button>
+  </form>
+</div>

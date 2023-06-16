@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('register_patient/', register_patient, name='register_patient'),
     path('medical-records/', view_medical_records, name='view_medical_records'),
+    path('schedule_appointment/', schedule_appointment, name='schedule_appointment'),
     path('success/', success, name='success'),
 ]
 
