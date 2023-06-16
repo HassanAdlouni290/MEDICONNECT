@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Medical Records</title>
+  <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Medical Records</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Date</th>
+          <th>Diagnosis</th>
+          <th>Prescription</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in medical_records %}
+        <tr>
+          <td>{{ record.patient_name }}</td>
+          <td>{{ record.date }}</td>
+          <td>{{ record.diagnosis }}</td>
+          <td>{{ record.prescription }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
