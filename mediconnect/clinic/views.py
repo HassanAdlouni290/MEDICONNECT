@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect, HttpResponse
 from .models import Patient,Appointment,MedicalRecord
 from django.contrib.auth.models import User
 from .models import Patient,Doctor,Nurse
@@ -118,13 +118,5 @@ def schedule_appointment_with_calendly(doctor_email, appointment_date, appointme
     else:
         raise Exception('Failed to schedule the appointment with Calendly.')
 
-def send_email(request):
-    email_subject = 'Test Email'
-    email_body = 'Hello, world!'
-    from_email = 'hasanadlouni@gmail.com'
 
-    email = EmailMessage(email_subject, email_body, from_email, ['hadlouni8@gmail.com'])
-    email.send()
-
-    return HttpResponse("Email Sent")
 

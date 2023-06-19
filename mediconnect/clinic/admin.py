@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.core.mail import send_mail
+
 from .models import *
 from .views import *
 
@@ -40,29 +42,42 @@ class AppointmentAdmin(admin.ModelAdmin):
             return self.readonly_fields + ('patient','doctor',)
         return self.readonly_fields
 
-    def send_email_notifications(self, request, queryset):
-        subject = "Appointment Notification"
-        message = f"Dear patient, your appointment with {Doctor.user} has been scheduled for {Appointment.appointment_date} at {Appointment.appointment_time}."
-        from_email = "hasanadlouni@gmail.com"
-        recipient_list = [doctor.email for doctor in queryset]
-        send_email(subject, message, from_email, recipient_list)
-    send_email_notifications.short_description = "Send Email Notifications"
-
-    def send_sms_notifications(self, request, queryset):
+    def send_sms_notifications(modeladmin, request, queryset):
+        # Get the selected rows and perform any necessary processing
         selected_rows = list(queryset)
-        numbers = []  # Replace with your desired numbers
+
+        numbers = ['76920402', '71023219']  # Replace with your desired numbers
 
         for number in numbers:
-            url = f"http://unosms.us/api.php?user=naderbakir@gmail.com&pass=qfzjui&to={number}&from=fsegorg&msg=nothing"
+            url = f"http://unosms.us/api.php?user=naderbakir@gmail.com&pass=qfzjui&to={number}&from=fsegorg&msg=Hi Hassan"
             response = requests.get(url)
 
             if response.status_code == 200:
-                self.message_user(request, f"SMS sent to {number} successfully!")
+                print(f"SMS sent to {number} successfully!")
             else:
-                self.message_user(request, f"Failed to send SMS to {number}. Error: {response.text}")
-    send_sms_notifications.short_description = "Send SMS Notifications"
+                print(f"Failed to send SMS to {number}. Error: {response.text}")
 
-    actions = [send_sms_notifications,send_email_notifications]
+    def send_email_notifications(modeladmin, request, queryset):
+        # Get the selected rows and perform any necessary processing
+        selected_rows = list(queryset)
+
+        for appointment in selected_rows:
+            recipient = appointment.patient.email
+
+            subject = 'Notification'
+            message = 'Hi, this is a notification email.'
+            from_email = 'hasanadlouni@gmail.com'  # Replace with your email address or use a valid email from the settings
+            recipient_list = [recipient]
+
+            try:
+                send_mail(subject, message, from_email, recipient_list)
+                print(f"Email sent to {recipient} successfully!")
+            except Exception as e:
+                print(f"Failed to send email to {recipient}. Error: {str(e)}")
+
+    send_email_notifications.short_description = "Send email notifications"
+
+    actions = [send_sms_notifications, send_email_notifications]
 
 
 admin.site.register(Doctor, DoctorAdmin)
