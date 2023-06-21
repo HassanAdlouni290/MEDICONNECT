@@ -28,4 +28,3 @@ urlpatterns = [
     path('success/', success, name='success'),
     path('appointment_success/', appointment_success, name='appointment_success'),
 ]
-

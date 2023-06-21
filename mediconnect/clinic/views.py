@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render,redirect, HttpResponse
 from .models import Patient,Appointment,MedicalRecord
 from django.contrib.auth.models import User
@@ -5,6 +6,8 @@ from .models import Patient,Doctor,Nurse
 import requests
 from .admin import *
 from django.core.mail import EmailMessage
+from django.conf import settings
+
 
 
 
@@ -42,6 +45,7 @@ def appointment_success(request):
 
 def schedule_appointment(request):
     if request.method == 'POST':
+        # Retrieve form data
         patient_name = request.POST['patient_name']
         doctor_name = request.POST['doctor_name']
         nurse_name = request.POST['nurse_name']
@@ -59,7 +63,18 @@ def schedule_appointment(request):
                                                  appointment_date=appointment_date, appointment_time=appointment_time,
                                                  treatment=treatment)
 
+        # Send email notification to the patient
+        subject = 'Appointment Scheduled'
+        message = f'Hello {patient.user.username}, your appointment has been scheduled for {appointment_date} at {appointment_time}.'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [patient.email]
 
+
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+            print(f"Email sent to {patient.email} successfully!")
+        except Exception as e:
+            print(f"Failed to send email to {patient.email}. Error: {str(e)}")
 
         return redirect('appointment_success')
     else:
@@ -123,6 +138,54 @@ def schedule_appointment_with_calendly(doctor_email, appointment_date, appointme
         return response.json()['data']['attributes']['uri']
     else:
         raise Exception('Failed to schedule the appointment with Calendly.')
+def send_sms_notifications(modeladmin, request, queryset):
+    selected_rows = list(queryset)
+
+    numbers = []
+    for appointment in selected_rows:
+        patient = appointment.patient
+        if patient.phone:
+            numbers.append((patient.phone, patient.user.get_full_name(), appointment.appointment_date,
+                            appointment.appointment_time))
+
+    if not numbers:
+        print("No valid phone numbers found.")
+        return
+
+    for number, patient_name, appointment_date, appointment_time in numbers:
+        url = f"http://unosms.us/api.php?user=naderbakir@gmail.com&pass=qfzjui&to={number}&from=fsegorg&msg=Hello {patient.user.username}, you have an appointment scheduled on {appointment_date} at {appointment_time}."
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            print(f"SMS sent to {number} successfully!")
+        else:
+            print(f"Failed to send SMS to {number}. Error: {response.text}")
+
+send_sms_notifications.short_description = "Send SMS notification"
+
+def send_email_notifications(modeladmin, request, queryset):
+    selected_rows = list(queryset)
+
+    for appointment in selected_rows:
+        patient = appointment.patient
+        recipient = patient.email
+        patient_name = patient.user.username
+        appointment_date = appointment.appointment_date
+        appointment_time = appointment.appointment_time
+
+        subject = 'Notification'
+        message = f'Hello {patient_name}, you have an appointment scheduled on {appointment_date} at {appointment_time}.'
+        from_email = 'hasanadlouni@gmail.com'  # Replace with your email address or use a valid email from the settings
+        recipient_list = [recipient]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+            print(f"Email sent to {recipient} successfully!")
+        except Exception as e:
+            print(f"Failed to send email to {recipient}. Error: {str(e)}")
+
+send_email_notifications.short_description = "Send Email notifications"
+
 
 
 
