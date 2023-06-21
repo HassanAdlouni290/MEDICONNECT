@@ -43,13 +43,21 @@ class AppointmentAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def send_sms_notifications(modeladmin, request, queryset):
-        # Get the selected rows and perform any necessary processing
         selected_rows = list(queryset)
 
-        numbers = ['76920402', '71023219']  # Replace with your desired numbers
+        numbers = []
+        for appointment in selected_rows:
+            patient = appointment.patient
+            if patient.phone:
+                numbers.append((patient.phone, patient.user.get_full_name(), appointment.appointment_date,
+                                appointment.appointment_time))
 
-        for number in numbers:
-            url = f"http://unosms.us/api.php?user=naderbakir@gmail.com&pass=qfzjui&to={number}&from=fsegorg&msg=Hi Hassan"
+        if not numbers:
+            print("No valid phone numbers found.")
+            return
+
+        for number, patient_name, appointment_date, appointment_time in numbers:
+            url = f"http://unosms.us/api.php?user=naderbakir@gmail.com&pass=qfzjui&to={number}&from=fsegorg&msg=Hello {patient.user.username}, you have an appointment scheduled on {appointment_date} at {appointment_time}."
             response = requests.get(url)
 
             if response.status_code == 200:
@@ -57,15 +65,20 @@ class AppointmentAdmin(admin.ModelAdmin):
             else:
                 print(f"Failed to send SMS to {number}. Error: {response.text}")
 
+    send_sms_notifications.short_description = "Send SMS notification"
+
     def send_email_notifications(modeladmin, request, queryset):
-        # Get the selected rows and perform any necessary processing
         selected_rows = list(queryset)
 
         for appointment in selected_rows:
-            recipient = appointment.patient.email
+            patient = appointment.patient
+            recipient = patient.email
+            patient_name = patient.user.username
+            appointment_date = appointment.appointment_date
+            appointment_time = appointment.appointment_time
 
             subject = 'Notification'
-            message = 'Hi, this is a notification email.'
+            message = f'Hello {patient_name}, you have an appointment scheduled on {appointment_date} at {appointment_time}.'
             from_email = 'hasanadlouni@gmail.com'  # Replace with your email address or use a valid email from the settings
             recipient_list = [recipient]
 
