@@ -1,75 +1,96 @@
-<!-- schedule_appointment.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Schedule Appointment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
 
-<style>
-  .form-container {
-    max-width: 400px;
-    margin: 0 auto;
-  }
+        h1 {
+            text-align: center;
+        }
 
-  .form-container label {
-    display: block;
-    margin-bottom: 10px;
-  }
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f7f7f7;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
 
-  .form-container select,
-  .form-container input[type="date"],
-  .form-container input[type="time"],
-  .form-container textarea {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 14px;
-  }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
 
-  .form-container button[type="submit"] {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-</style>
+        select, input[type="date"], input[type="time"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-<div class="form-container">
-  <form method="POST">
-    {% csrf_token %}
+        textarea {
+            height: 100px;
+        }
 
-    <!-- Select Doctor -->
-    <label for="doctor">Doctor:</label>
-    <select name="doctor" id="doctor">
-      <!-- Retrieve and loop through available doctors -->
-      {% for doctor in doctors %}
-        <option value="{{ doctor.id }}">{{ doctor.user.username }}</option>
-      {% endfor %}
-    </select>
+        input[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Schedule Appointment</h1>
 
-    <!-- Select Nurse -->
-    <label for="nurse">Nurse:</label>
-    <select name="nurse" id="nurse">
-      <!-- Retrieve and loop through available nurses -->
-      {% for nurse in nurses %}
-        <option value="{{ nurse.id }}">{{ nurse.user.username }}</option>
-      {% endfor %}
-    </select>
+    <form method="POST" action="{% url 'schedule_appointment' %}">
+        {% csrf_token %}
 
-    <!-- Appointment Date -->
-    <label for="appointment_date">Appointment Date:</label>
-    <input type="date" name="appointment_date" id="appointment_date">
+        <label for="patient_name">Patient:</label>
+        <select name="patient_name" id="patient_name">
+            <option value="" disabled selected>Select the name of the patient</option>
+            {% for patient in patients %}
+                <option value="{{ patient.user.username }}">{{ patient.user.username }}</option>
+            {% endfor %}
+        </select><br><br>
 
-    <!-- Appointment Time -->
-    <label for="appointment_time">Appointment Time:</label>
-    <input type="time" name="appointment_time" id="appointment_time">
+        <label for="doctor_name">Doctor:</label>
+        <select name="doctor_name" id="doctor_name">
+            <option value="" disabled selected>Select the name of the doctor</option>
+            {% for doctor in doctors %}
+                <option value="{{ doctor.user.username }}">{{ doctor.user.username }}</option>
+            {% endfor %}
+        </select><br><br>
 
-    <!-- Treatment -->
-    <label for="treatment">Treatment:</label>
-    <textarea name="treatment" id="treatment" rows="4" cols="50"></textarea>
+        <label for="nurse_name">Nurse:</label>
+        <select name="nurse_name" id="nurse_name">
+            <option value="" disabled selected>Select the name of the nurse</option>
+            {% for nurse in nurses %}
+                <option value="{{ nurse.user.username }}">{{ nurse.user.username }}</option>
+            {% endfor %}
+        </select><br><br>
 
-    <!-- Submit Button -->
-    <button type="submit">Schedule Appointment</button>
-  </form>
-</div>
+        <label for="appointment_date">Appointment Date:</label>
+        <input type="date" name="appointment_date" id="appointment_date"><br><br>
+
+        <label for="appointment_time">Appointment Time:</label>
+        <input type="time" name="appointment_time" id="appointment_time"><br><br>
+
+        <label for="treatment">Treatment:</label>
+        <textarea name="treatment" id="treatment"></textarea><br><br>
+
+        <input type="submit" value="Schedule Appointment">
+    </form>
+</body>
+</html>

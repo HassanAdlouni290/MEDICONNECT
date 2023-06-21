@@ -3,6 +3,7 @@ from .models import Patient,Appointment,MedicalRecord
 from django.contrib.auth.models import User
 from .models import Patient,Doctor,Nurse
 import requests
+from .admin import *
 from django.core.mail import EmailMessage
 
 
@@ -36,34 +37,39 @@ def register_patient(request):
 def success(request):
     return render(request, 'success.html')
 
+def appointment_success(request):
+    return render(request, 'appointment_success.html')
+
 def schedule_appointment(request):
     if request.method == 'POST':
-        # Retrieve the form data from the request.POST dictionary
-        doctor_username = request.POST['Doctor']
-        nurse_username = request.POST['Nurse']
+        patient_name = request.POST['patient_name']
+        doctor_name = request.POST['doctor_name']
+        nurse_name = request.POST['nurse_name']
         appointment_date = request.POST['appointment_date']
         appointment_time = request.POST['appointment_time']
         treatment = request.POST['treatment']
 
-        # Retrieve the doctor, nurse, and patient based on the usernames
-        doctor = User.objects.get(username=doctor_username).doctor
-        nurse = User.objects.get(username=nurse_username).nurse
-        patient = request.user.patient
+        # Get the patient, doctor, and nurse objects
+        patient = Patient.objects.get(user__username=patient_name)
+        doctor = Doctor.objects.get(user__username=doctor_name)
+        nurse = Nurse.objects.get(user__username=nurse_name)
 
         # Create a new Appointment instance
-        appointment = Appointment.objects.create(
-            patient=patient,
-            doctor=doctor,
-            nurse=nurse,
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
-            treatment=treatment
-        )
+        appointment = Appointment.objects.create(patient=patient, doctor=doctor, nurse=nurse,
+                                                 appointment_date=appointment_date, appointment_time=appointment_time,
+                                                 treatment=treatment)
 
-        # Redirect to a success page or another view
-        return redirect('success')
+
+
+        return redirect('appointment_success')
     else:
-        return render(request, 'schedule_appointment.html')
+        # Retrieve the list of patients, doctors, and nurses from the database
+        patients = Patient.objects.all()
+        doctors = Doctor.objects.all()
+        nurses = Nurse.objects.all()
+
+        context = {'patients': patients, 'doctors': doctors, 'nurses': nurses}
+        return render(request, 'schedule_appointment.html', context)
 
 
 def view_medical_records(request):
