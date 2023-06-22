@@ -29,7 +29,4 @@ urlpatterns = [
     path('schedule_appointment/', schedule_appointment, name='schedule_appointment'),
     path('success/', success, name='success'),
     path('appointment_success/', appointment_success, name='appointment_success'),
-    path('doctor/login/', LoginView.as_view(template_name='doctor_login.html'), name='doctor_login'),
-    path('nurse/login/', LoginView.as_view(template_name='nurse_login.html'), name='nurse_login'),
-    path('patient/login/', LoginView.as_view(template_name='patient_login.html'), name='patient_login'),
 ]
