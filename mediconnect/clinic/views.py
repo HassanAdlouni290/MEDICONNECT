@@ -7,6 +7,7 @@ import requests
 from .admin import *
 from django.core.mail import EmailMessage
 from django.conf import settings
+from django.contrib.auth.views import LoginView
 
 
 
@@ -185,6 +186,8 @@ def send_email_notifications(modeladmin, request, queryset):
             print(f"Failed to send email to {recipient}. Error: {str(e)}")
 
 send_email_notifications.short_description = "Send Email notifications"
+
+
 
 
 
